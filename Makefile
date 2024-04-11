@@ -4,7 +4,7 @@ RM = rm -f
 CC = gcc
 CCFLAGS = -Wall -Wextra -Werror
 
-NAME = 
+NAME = pipex
 SRC = 
 OBJ = $(SRC:.c=.o)
 INCLUDE = 
