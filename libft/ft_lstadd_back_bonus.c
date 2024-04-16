@@ -1,22 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex.h                                            :+:      :+:    :+:   */
+/*   ft_lstadd_back_bonus.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: paromero <paromero@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: paromero <paromero@student.42malaga.com>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/11 09:24:07 by paromero          #+#    #+#             */
-/*   Updated: 2024/04/16 09:01:18 by paromero         ###   ########.fr       */
+/*   Created: 2023/10/27 10:32:01 by paromero          #+#    #+#             */
+/*   Updated: 2023/10/30 11:53:45 by paromero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_H
-# define PIPEX_H
+#include "libft.h"
 
-# include <unistd.h>
-# include <stdlib.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <sys/wait.h>
+void	ft_lstadd_back(t_list **lst, t_list *new)
+{
+	t_list	*tmp;
 
-#endif
+	tmp = ft_lstlast(*lst);
+	if (tmp)
+		tmp->next = new;
+	else
+		*lst = new;
+}
