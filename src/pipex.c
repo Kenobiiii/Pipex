@@ -44,7 +44,7 @@ void	execute_command(char **cmd)
 	else
 	{
 		execve(find_command_path(cmd[0]), cmd, NULL);
-		if (!excve)
+		if (!execve)
 		{
 			perror("No se ha podido ejecutar el comando");
 			exit(EXIT_FAILURE);
@@ -57,7 +57,7 @@ void	child_process(int fd[], char **cmd1, char *file1)
 	int	infile;
 
 	infile = open(file1, O_RDONLY);
-	if (!infile)
+	if (infile == -1)
 	{
 		perror("Error al abrir el archivo de entrada");
 		exit(EXIT_FAILURE);
@@ -65,6 +65,11 @@ void	child_process(int fd[], char **cmd1, char *file1)
 	if (dup2(infile, STDIN_FILENO) == -1)
 	{
 		perror("Error al duplicar el infile");
+		exit(EXIT_FAILURE);
+	}
+	if (dup2(fd[1], STDOUT_FILENO) == -1)
+	{
+		perror("Error al duplicar el outfile");
 		exit(EXIT_FAILURE);
 	}
 	close(fd[0]);
@@ -96,25 +101,25 @@ void	parent_process(int fd[], char **cmd2, char *file2)
 	exit(EXIT_FAILURE);
 }
 
-int	main (int ac, char **av)
+int	main(int ac, char **av)
 {
 	int		fd[2];
 	pid_t	pid;
 
 	if (ac != 5)
 	{
-		ft_putstr_fd("Error: wrong number of arguments\n", 2);
+		perror("Error: número incorrecto de argumentos");
 		return (1);
 	}
 	if (pipe(fd) == -1)
 	{
-		perror("Error creating pipe");
+		perror("Error creando el pipe");
 		return (1);
 	}
 	pid = fork();
 	if (pid == -1)
 	{
-		perror("Error creating child process");
+		perror("Error creando el child process");
 		return (1);
 	}
 	if (pid == 0)

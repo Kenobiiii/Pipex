@@ -24,6 +24,5 @@ char	*find_command_path(char *cmd);
 void	execute_command(char **cmd);
 void	child_process(int fd[], char **cmd1, char *file1);
 void	parent_process(int fd[], char **cmd2, char *file2);
-int		main (int ac, char **av);
 
 #endif
