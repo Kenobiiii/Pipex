@@ -6,7 +6,7 @@
 /*   By: paromero <paromero@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 09:23:40 by paromero          #+#    #+#             */
-/*   Updated: 2024/04/22 12:28:12 by paromero         ###   ########.fr       */
+/*   Updated: 2024/04/23 10:10:03 by paromero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,17 @@ char	*find_command_path(char *cmd)
 
 void	execute_command(char **cmd)
 {
-	if (!find_command_path(cmd[0]))
+	char	*cmd_path;
+
+	cmd_path = find_command_path(cmd[0]);
+	if (!cmd_path)
 	{
 		perror("No se ha encontrado el comando");
 		exit(EXIT_FAILURE);
 	}
 	else
 	{
-		execve(find_command_path(cmd[0]), cmd, NULL);
-		if (!execve)
+		if (execve(cmd_path, cmd, NULL) == -1)
 		{
 			perror("No se ha podido ejecutar el comando");
 			exit(EXIT_FAILURE);
@@ -62,31 +64,37 @@ void	child_process(int fd[], char **cmd1, char *file1)
 		perror("Error al abrir el archivo de entrada");
 		exit(EXIT_FAILURE);
 	}
-	if (dup2(infile, STDIN_FILENO) == -1)
+	if (dup2(infile, 0) == -1)
 	{
-		perror("Error al duplicar el infile");
+		perror("Error duplicating file descriptor");
 		exit(EXIT_FAILURE);
 	}
-	if (dup2(fd[1], STDOUT_FILENO) == -1)
+	if (dup2(fd[1], 1) == -1)
 	{
-		perror("Error al duplicar el outfile");
+		perror("Error duplicating file descriptor");
 		exit(EXIT_FAILURE);
 	}
-	close(fd[0]);
-	close(infile);
+	if (close(fd[0]) == -1 || close(infile) == -1)
+	{
+		perror("Error closing file descriptor");
+		exit(EXIT_FAILURE);
+	}
 	execute_command(cmd1);
-	perror("Error ejecutando el primer comando");
-	exit(EXIT_FAILURE);
 }
 
 void	parent_process(int fd[], char **cmd2, char *file2)
 {
 	int	outfile;
 
-	outfile = open(file2, O_RDONLY | O_CREAT);
-	if (!outfile)
+	outfile = open(file2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (outfile == -1)
 	{
-		perror("Error abriendo el archivo");
+		perror("Error abriendo el archivo de salida");
+		exit(EXIT_FAILURE);
+	}
+	if (dup2(fd[0], STDIN_FILENO) == -1)
+	{
+		perror("Error al duplicar el archivo");
 		exit(EXIT_FAILURE);
 	}
 	if (dup2(outfile, STDOUT_FILENO) == -1)
@@ -94,11 +102,12 @@ void	parent_process(int fd[], char **cmd2, char *file2)
 		perror("Error al duplicar el outfile");
 		exit(EXIT_FAILURE);
 	}
-	close(fd[1]);
-	close(outfile);
+	if (close(fd[1]) == -1 || close(outfile) == -1)
+	{
+		perror("Error closing file descriptor");
+		exit(EXIT_FAILURE);
+	}
 	execute_command(cmd2);
-	perror("Error ejecutando el segundo commando");
-	exit(EXIT_FAILURE);
 }
 
 int	main(int ac, char **av)
@@ -108,7 +117,7 @@ int	main(int ac, char **av)
 
 	if (ac != 5)
 	{
-		perror("Error: número incorrecto de argumentos");
+		ft_printf("Usage: ./pipex file1 cmd1 cmd2 file2\n");
 		return (1);
 	}
 	if (pipe(fd) == -1)
